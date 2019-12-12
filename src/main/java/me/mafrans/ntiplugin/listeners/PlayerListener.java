@@ -18,7 +18,7 @@ public class PlayerListener  extends Base implements Listener {
         Student student = new Student(e.getPlayer());
 
         if(student.getSchedule() == null) {
-            e.setJoinMessage(NUtil.colorize(config.getString("messages.join_unlinked")));
+            e.getPlayer().sendMessage(NUtil.colorize(config.getString("messages.join_unlinked")));
             return;
         }
 
@@ -29,7 +29,7 @@ public class PlayerListener  extends Base implements Listener {
         }
 
         if(config.contains("messages.join") && config.getString("messages.join").isEmpty()) {
-            e.setJoinMessage(NUtil.colorize(config.getString("messages.join")));
+            e.getPlayer().sendMessage(NUtil.colorize(config.getString("messages.join")));
         }
     }
 
