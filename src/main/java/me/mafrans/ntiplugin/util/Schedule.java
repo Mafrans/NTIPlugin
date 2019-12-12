@@ -12,8 +12,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 
 public class Schedule {
+
+    private static HashMap<String, JSONObject> cache = new HashMap<>();
+
     private File file;
     private String name;
     private JSONObject json;
@@ -21,7 +25,16 @@ public class Schedule {
     public Schedule(String name, File file) throws IOException {
         this.file = file;
         this.name = name;
+
+        if(!cache.containsKey(name)) {
+            cacheSchedule(name, file);
+        }
+        this.json = cache.get(name);
+    }
+
+    public void cacheSchedule(String name, File file) throws IOException {
         this.json = new JSONObject(StringUtils.join(NUtil.readFile(file)));
+        cache.put(name, this.json);
     }
 
     public File getFile() {
