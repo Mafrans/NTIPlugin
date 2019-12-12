@@ -1,0 +1,8 @@
+name: NTIPlugin
+main: me.mafrans.ntiplugin.NTIPlugin
+version: 1.0
+
+commands:
+  link:
+    description: "Länkar din Minecraft-användare med din klass."
+    usage: "/<command> <klass>"

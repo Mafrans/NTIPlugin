@@ -1,0 +1,21 @@
+messages:
+  error: "&cShit, något gick snett! Ta en snack med Nichlas och se om han kan fixa problemet."
+  join: ""
+  join_unlinked: "&6Välkommen till &0NTIs Minecraft Server!\n&8---------\n&fFör att få tillgång till servern måste du först länka ditt schema.\n&fSkriv '&d/link &a<klass>&f' så vi kan veta vilken klass du går i."
+  lesson: "Din klass har lektion just nu, så servern har blockerat er.\nOm du tror det är något fel, prata med Nichlas."
+  help: "&fHjälp för kommandot '&dlink&f'\n&fFör att vi ska veta vilken klass du går i måste du först länka din klass med din Minecraft-användare.\nDetta gör du genom att skriva '&d/link &a<klass>&f', där '&a<klass>&f' är den klass du går i."
+  class_list: "Tillgängliga klassnamn är: &6TE17&f, &6TE18&f, &6TE19&f, &6EE17&f, &6EE18&f, &6EE19&f, &6ES17&f, &6ES18&f, &6ES19&f, &6HA17&f, &6HA19&f, &6TE4&f."
+
+classes:
+  - "TE17"
+  - "TE18"
+  - "TE19"
+  - "EE17"
+  - "EE18"
+  - "EE19"
+  - "ES17"
+  - "ES18"
+  - "ES19"
+  - "HA17"
+  - "HA19"
+  - "TE4"
