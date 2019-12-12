@@ -13,6 +13,7 @@ import java.util.Date;
 
 public class NTIPlugin extends JavaPlugin {
     public Database database;
+    public boolean debug;
 
     @Override
     public void onEnable() {
@@ -20,6 +21,11 @@ public class NTIPlugin extends JavaPlugin {
 
         Base.plugin = this;
         Base.config = getConfig();
+        Base.logger = getLogger();
+
+        if(Base.config.contains("debug")) {
+            debug = Base.config.getBoolean("debug");
+        }
 
         getServer().getPluginManager().registerEvents(new PlayerListener(), this);
         getCommand("link").setExecutor(new Command_link());
