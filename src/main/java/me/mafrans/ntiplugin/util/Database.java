@@ -1,5 +1,6 @@
 package me.mafrans.ntiplugin.util;
 
+import me.mafrans.ntiplugin.Base;
 import org.apache.commons.lang.StringUtils;
 import org.json.JSONObject;
 
@@ -24,6 +25,10 @@ public class Database extends JSONObject {
         PrintWriter printWriter = new PrintWriter(file);
         printWriter.println(toString());
         printWriter.close();
+
+        if(Base.plugin.debug) {
+            Base.logger.warning("Writing to file...");
+        }
     }
 
     public void addStudent(Student student) {
