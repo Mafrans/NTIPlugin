@@ -8,6 +8,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 
 import java.util.Date;
 
@@ -22,12 +23,26 @@ public class PlayerListener  extends Base implements Listener {
         }
 
         if(student.getSchedule().hasLesson(new Date())) {
+            e.setJoinMessage("");
             e.getPlayer().kickPlayer(NUtil.colorize(config.getString("messages.lesson")));
             return;
         }
 
         if(config.contains("messages.join") && config.getString("messages.join").isEmpty()) {
             e.setJoinMessage(NUtil.colorize(config.getString("messages.join")));
+        }
+    }
+
+    @EventHandler
+    public void onPlayerQuit(PlayerQuitEvent e) {
+        Student student = new Student(e.getPlayer());
+
+        if(student.getSchedule() == null) {
+            return;
+        }
+
+        if(student.getSchedule().hasLesson(new Date())) {
+            e.setQuitMessage("");
         }
     }
 
