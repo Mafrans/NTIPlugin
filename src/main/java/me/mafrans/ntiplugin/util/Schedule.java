@@ -4,19 +4,19 @@ import me.mafrans.ntiplugin.Base;
 import me.mafrans.ntiplugin.NTIPlugin;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
+import org.bukkit.entity.Player;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
+import java.util.*;
 
 public class Schedule {
 
-    private static HashMap<String, JSONObject> cache = new HashMap<>();
+    private static Map<String, JSONObject> cache = new HashMap<>();
+    private static Map<UUID, Integer> exemptedPlayers = new HashMap<>();
 
     private File file;
     private String name;
@@ -81,7 +81,35 @@ public class Schedule {
         return false;
     }
 
-    private int getTimeMinutes(String hhmm) {
+    public static boolean isExempted(Player player) {
+        return exemptedPlayers.containsKey(player.getUniqueId());
+    }
+
+    public static void updateExempted() {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(new Date());
+
+        int current = getTimeMinutes(calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE));
+
+        HashMap<UUID, Integer> copy = (HashMap<UUID, Integer>) ((HashMap<UUID, Integer>) exemptedPlayers).clone();
+        for(UUID uuid : copy.keySet()) {
+            int time = copy.get(uuid);
+
+            if(current > time) {
+                exemptedPlayers.remove(uuid);
+            }
+        }
+    }
+
+    public static void exempt(UUID player, String time) {
+        exemptedPlayers.put(player, getTimeMinutes(time));
+    }
+
+    public static Map<UUID, Integer> getExemptedPlayers() {
+        return exemptedPlayers;
+    }
+
+    public static int getTimeMinutes(String hhmm) {
         String[] split = hhmm.split(":");
         int hours = Integer.parseInt(split[0]);
         int minutes = Integer.parseInt(split[1]);
@@ -89,7 +117,7 @@ public class Schedule {
         return getTimeMinutes(hours, minutes);
     }
 
-    private int getTimeMinutes(int hours, int minutes) {
+    public static int getTimeMinutes(int hours, int minutes) {
         return 60*hours + minutes;
     }
 
