@@ -13,8 +13,7 @@ import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.json.simple.*;
-import org.json.simple.parser.JSONParser;
+import org.json.*;
 
 import com.google.common.base.Strings;
 import com.google.common.cache.*;
@@ -1260,7 +1259,6 @@ class Skin implements ConfigurationSerializable {
 class MojangAPIUtil {
     private static URL API_STATUS_URL = null;
     private static URL GET_UUID_URL = null;
-    private static final JSONParser PARSER = new JSONParser();
 
     private static Plugin plugin;
 
@@ -1329,10 +1327,11 @@ class MojangAPIUtil {
             if (successful && responseCode == 200) {
                 try {
                     Map<String, APIStatus> map = Maps.newHashMap();
-                    JSONArray jsonArray = (JSONArray) PARSER.parse(response);
-                    for (JSONObject jsonObject : (List<JSONObject>) jsonArray) {
-                        for (JSONObject.Entry<String, String> entry : ((Map<String, String>) jsonObject).entrySet()) {
-                            map.put(entry.getKey(), APIStatus.fromString(entry.getValue()));
+                    JSONArray jsonArray = new JSONArray(response);
+                    for (int i = 0; i < jsonArray.length(); i++) {
+                        JSONObject jsonObject = jsonArray.getJSONObject(i);
+                        for(String key : jsonObject.keySet()) {
+                            map.put(key, APIStatus.fromString(jsonObject.getString(key)));
                         }
                     }
                     callBack.callBack(true, map, null);
@@ -1419,9 +1418,9 @@ class MojangAPIUtil {
                     try {
                         UUIDAtTime[] uuidAtTime = new UUIDAtTime[1];
                         if (responseCode == 200) {
-                            JSONObject object = (JSONObject) PARSER.parse(response);
-                            String uuidString = (String) object.get("id");
-                            uuidAtTime[0] = new UUIDAtTime((String) object.get("name"), getUUIDFromString(uuidString));
+                            JSONObject object = new JSONObject(response);
+                            String uuidString = object.getString("id");
+                            uuidAtTime[0] = new UUIDAtTime(object.getString("name"), getUUIDFromString(uuidString));
                         }
                         callBack.callBack(true, uuidAtTime[0], null);
                     } catch (Exception e) {
@@ -1523,11 +1522,12 @@ class MojangAPIUtil {
                     try {
                         Map<String, Long> map = Maps.newHashMap();
                         if (responseCode == 200) {
-                            JSONArray jsonArray = (JSONArray) PARSER.parse(response);
-                            for (JSONObject jsonObject : (List<JSONObject>) jsonArray) {
+                            JSONArray jsonArray = new JSONArray(response);
+                            for (int i = 0; i < jsonArray.length(); i++) {
+                                JSONObject jsonObject = jsonArray.getJSONObject(i);
                                 String name = (String) jsonObject.get("name");
-                                if (jsonObject.containsKey("changedToAt")) {
-                                    map.put(name, (Long) jsonObject.get("changedToAt"));
+                                if (jsonObject.has("changedToAt")) {
+                                    map.put(name, jsonObject.getLong("changedToAt"));
                                 } else {
                                     map.put(name, -1L);
                                 }
@@ -1584,25 +1584,29 @@ class MojangAPIUtil {
         Validate.notNull(usernames, "usernames cannot be null");
         Validate.isTrue(usernames.size() <= 100, "cannot request more than 100 usernames at once");
         JSONArray usernameJson = new JSONArray();
-        usernameJson.addAll(usernames.stream().filter(s -> !Strings.isNullOrEmpty(s)).collect(Collectors.toList()));
-        RequestResult result = makeSyncPostRequest(GET_UUID_URL, usernameJson.toJSONString());
+        for(String username : usernames.stream().filter(s -> !Strings.isNullOrEmpty(s)).collect(Collectors.toList())) {
+            usernameJson.put(username);
+        }
+
+        RequestResult result = makeSyncPostRequest(GET_UUID_URL, usernameJson.toString());
         if (result == null) {
             return new Result<>(null, false, new RuntimeException("No plugin instance found!"));
         }
         try {
             if (result.successful && result.responseCode == 200) {
                 Map<String, Profile> map = Maps.newHashMap();
-                JSONArray jsonArray = (JSONArray) PARSER.parse(result.response);
+                JSONArray jsonArray = new JSONArray(result.response);
                 // noinspection Duplicates
-                for (JSONObject jsonObject : (List<JSONObject>) jsonArray) {
+                for (int i = 0; i < jsonArray.length(); i++) {
+                    JSONObject jsonObject = jsonArray.getJSONObject(i);
                     String uuidString = (String) jsonObject.get("id");
                     String name = (String) jsonObject.get("name");
                     boolean legacy = false;
-                    if (jsonObject.containsKey("legacy")) {
+                    if (jsonObject.has("legacy")) {
                         legacy = (boolean) jsonObject.get("legacy");
                     }
                     boolean unpaid = false;
-                    if (jsonObject.containsKey("demo")) {
+                    if (jsonObject.has("demo")) {
                         unpaid = (boolean) jsonObject.get("demo");
                     }
                     map.put(name, new Profile(getUUIDFromString(uuidString), name, legacy, unpaid));
@@ -1637,8 +1641,10 @@ class MojangAPIUtil {
         Validate.notNull(usernames, "usernames cannot be null");
         Validate.isTrue(usernames.size() <= 100, "cannot request more than 100 usernames at once");
         JSONArray usernameJson = new JSONArray();
-        usernameJson.addAll(usernames.stream().filter(s -> !Strings.isNullOrEmpty(s)).collect(Collectors.toList()));
-        makeAsyncPostRequest(GET_UUID_URL, usernameJson.toJSONString(),
+        for(String username : usernames.stream().filter(s -> !Strings.isNullOrEmpty(s)).collect(Collectors.toList())) {
+            usernameJson.put(username);
+        }
+        makeAsyncPostRequest(GET_UUID_URL, usernameJson.toString(),
                 (successful, response, exception, responseCode) -> {
                     if (callBack == null) {
                         return;
@@ -1646,17 +1652,18 @@ class MojangAPIUtil {
                     try {
                         if (successful && responseCode == 200) {
                             Map<String, Profile> map = Maps.newHashMap();
-                            JSONArray jsonArray = (JSONArray) PARSER.parse(response);
+                            JSONArray jsonArray = new JSONArray(response);
                             // noinspection Duplicates
-                            for (JSONObject jsonObject : (List<JSONObject>) jsonArray) {
+                            for (int i = 0; i < jsonArray.length(); i++) {
+                                JSONObject jsonObject = jsonArray.getJSONObject(i);
                                 String uuidString = (String) jsonObject.get("id");
                                 String name = (String) jsonObject.get("name");
                                 boolean legacy = false;
-                                if (jsonObject.containsKey("legacy")) {
+                                if (jsonObject.has("legacy")) {
                                     legacy = (boolean) jsonObject.get("legacy");
                                 }
                                 boolean unpaid = false;
-                                if (jsonObject.containsKey("demo")) {
+                                if (jsonObject.has("demo")) {
                                     unpaid = (boolean) jsonObject.get("demo");
                                 }
                                 map.put(name, new Profile(getUUIDFromString(uuidString), name, legacy, unpaid));
@@ -1755,34 +1762,35 @@ class MojangAPIUtil {
                 if (result.responseCode == 204) {
                     return new Result<>(null, true, null);
                 }
-                JSONObject object = (JSONObject) PARSER.parse(result.response);
+                JSONObject object = new JSONObject(result.response);
                 JSONArray propertiesArray = (JSONArray) object.get("properties");
                 String base64 = null;
                 String signedBase64 = null;
                 // noinspection Duplicates
-                for (JSONObject property : (List<JSONObject>) propertiesArray) {
-                    String name = (String) property.get("name");
+                for (int i = 0; i < propertiesArray.length(); i++) {
+                    JSONObject property = propertiesArray.getJSONObject(i);
+                    String name = property.getString("name");
                     if (name.equals("textures")) {
-                        base64 = (String) property.get("value");
-                        signedBase64 = (String) property.get("signature");
+                        base64 = property.getString("value");
+                        signedBase64 = property.getString("signature");
                     }
                 }
                 if (base64 == null) {
                     return new Result<>(null, true, null);
                 }
                 String decodedBase64 = new String(Base64.getDecoder().decode(base64), "UTF-8");
-                JSONObject base64json = (JSONObject) PARSER.parse(decodedBase64);
+                JSONObject base64json = new JSONObject(decodedBase64);
                 long timeStamp = (long) base64json.get("timestamp");
                 String profileName = (String) base64json.get("profileName");
                 UUID profileId = getUUIDFromString((String) base64json.get("profileId"));
                 JSONObject textures = (JSONObject) base64json.get("textures");
                 String skinURL = null;
                 String capeURL = null;
-                if (textures.containsKey("SKIN")) {
+                if (textures.has("SKIN")) {
                     JSONObject skinObject = (JSONObject) textures.get("SKIN");
                     skinURL = (String) skinObject.get("url");
                 }
-                if (textures.containsKey("CAPE")) {
+                if (textures.has("CAPE")) {
                     JSONObject capeObject = (JSONObject) textures.get("CAPE");
                     capeURL = (String) capeObject.get("url");
                 }
@@ -1843,16 +1851,17 @@ class MojangAPIUtil {
                         callBack.callBack(true, null, null);
                         return;
                     }
-                    JSONObject object = (JSONObject) PARSER.parse(response);
+                    JSONObject object = new JSONObject(response);
                     JSONArray propertiesArray = (JSONArray) object.get("properties");
                     String base64 = null;
                     String signedBase64 = null;
                     // noinspection Duplicates
-                    for (JSONObject property : (List<JSONObject>) propertiesArray) {
-                        String name = (String) property.get("name");
+                    for (int i = 0; i < propertiesArray.length(); i++) {
+                        JSONObject property = propertiesArray.getJSONObject(i);
+                        String name = property.getString("name");
                         if (name.equals("textures")) {
-                            base64 = (String) property.get("value");
-                            signedBase64 = (String) property.get("signature");
+                            base64 = property.getString("value");
+                            signedBase64 = property.getString("signature");
                         }
                     }
                     if (base64 == null) {
@@ -1860,18 +1869,18 @@ class MojangAPIUtil {
                         return;
                     }
                     String decodedBase64 = new String(Base64.getDecoder().decode(base64), "UTF-8");
-                    JSONObject base64json = (JSONObject) PARSER.parse(decodedBase64);
+                    JSONObject base64json = new JSONObject(decodedBase64);
                     long timeStamp = (long) base64json.get("timestamp");
                     String profileName = (String) base64json.get("profileName");
                     UUID profileId = getUUIDFromString((String) base64json.get("profileId"));
                     JSONObject textures = (JSONObject) base64json.get("textures");
                     String skinURL = null;
                     String capeURL = null;
-                    if (textures.containsKey("SKIN")) {
+                    if (textures.has("SKIN")) {
                         JSONObject skinObject = (JSONObject) textures.get("SKIN");
                         skinURL = (String) skinObject.get("url");
                     }
-                    if (textures.containsKey("CAPE")) {
+                    if (textures.has("CAPE")) {
                         JSONObject capeObject = (JSONObject) textures.get("CAPE");
                         capeURL = (String) capeObject.get("url");
                     }
