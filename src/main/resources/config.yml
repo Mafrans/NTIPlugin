@@ -19,3 +19,7 @@ classes:
   - "HA17"
   - "HA19"
   - "TE4"
+
+tablist:
+  header: "&8------ &d&lNTIs Minecraft Server &8------"
+  footer: "&8---- &bSkriv &e/link &bför att länka din klass! &8----"

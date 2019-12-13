@@ -1,8 +1,18 @@
 name: NTIPlugin
 main: me.mafrans.ntiplugin.NTIPlugin
-version: 1.0
+version: 1.1
 
 commands:
   link:
     description: "Länkar din Minecraft-användare med din klass."
     usage: "/<command> <klass>"
+  exempt:
+    description: "Undantar en elev i en viss tid."
+    usage: "/<command> <spelare> <HH:mm>"
+    permission: ntiplugin.exempt
+    permission-message: "Du får inte använda det här kommandot!"
+
+permissions:
+  ntiplugin.exempt:
+    description: "Tillåter /exempt"
+    default: op

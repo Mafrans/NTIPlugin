@@ -1,5 +1,6 @@
 package me.mafrans.ntiplugin;
 
+import me.mafrans.ntiplugin.commands.Command_exempt;
 import me.mafrans.ntiplugin.commands.Command_link;
 import me.mafrans.ntiplugin.listeners.PlayerListener;
 import me.mafrans.ntiplugin.util.*;
@@ -14,6 +15,7 @@ import java.util.Date;
 public class NTIPlugin extends JavaPlugin {
     public Database database;
     public boolean debug;
+    public RoleHandler roleHandler;
 
     @Override
     public void onEnable() {
@@ -29,6 +31,7 @@ public class NTIPlugin extends JavaPlugin {
 
         getServer().getPluginManager().registerEvents(new PlayerListener(), this);
         getCommand("link").setExecutor(new Command_link());
+        getCommand("exempt").setExecutor(new Command_exempt());
 
         try {
             database = new Database(new File(getDataFolder(), "database.json"));
@@ -36,6 +39,8 @@ public class NTIPlugin extends JavaPlugin {
         catch (IOException e) {
             e.printStackTrace();
         }
+
+        roleHandler = new RoleHandler();
 
         Schedule.saveDefaults();
         startKickTimer();
@@ -48,12 +53,14 @@ public class NTIPlugin extends JavaPlugin {
                 {
                     for(Player player : Bukkit.getServer().getOnlinePlayers())
                     {
+                        if(Schedule.isExempted(player)) continue;
+
                         Student student = new Student(player);
                         if(student.getSchedule() == null || student.getSchedule().hasLesson(new Date())) {
                             player.kickPlayer(NUtil.colorize(Base.config.getString("messages.lesson")));
-                            return;
                         }
                     }
+                    Schedule.updateExempted();
                 }
             }
         , 0, 1200);

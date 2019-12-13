@@ -1,12 +1,13 @@
 package me.mafrans.ntiplugin.util;
 
-import net.minecraft.server.v1_15_R1.IChatBaseComponent;
-import net.minecraft.server.v1_15_R1.PacketPlayOutPlayerListHeaderFooter;
-import net.minecraft.server.v1_15_R1.PlayerConnection;
-import org.bukkit.craftbukkit.v1_15_R1.entity.CraftPlayer;
+import net.minecraft.server.v1_14_R1.IChatBaseComponent;
+import net.minecraft.server.v1_14_R1.PacketPlayOutPlayerListHeaderFooter;
+import net.minecraft.server.v1_14_R1.PlayerConnection;
+import org.bukkit.craftbukkit.v1_14_R1.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 
 import java.lang.reflect.Field;
+import java.util.Arrays;
 
 public class TablistUtil {
     public static void setForPlayer(Player p, String header, String footer){
@@ -19,12 +20,13 @@ public class TablistUtil {
         PacketPlayOutPlayerListHeaderFooter packet = new PacketPlayOutPlayerListHeaderFooter();
         try
         {
-            Field headerField = packet.getClass().getDeclaredField("a");
+            System.out.println(Arrays.toString(packet.getClass().getDeclaredFields()));
+            Field headerField = packet.getClass().getDeclaredFields()[0];
             headerField.setAccessible(true);
             headerField.set(packet, top);
             headerField.setAccessible(!headerField.isAccessible());
 
-            Field footerField = packet.getClass().getDeclaredField("b");
+            Field footerField = packet.getClass().getDeclaredFields()[1];
             footerField.setAccessible(true);
             footerField.set(packet, bottom);
             footerField.setAccessible(!footerField.isAccessible());
